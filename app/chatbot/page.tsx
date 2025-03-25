@@ -589,14 +589,14 @@ export default function ChatbotPage() {
 
   return (
     <>
-      <div className='container mx-auto px-4 py-8'>
+      <div className='container mx-auto px-4 py-8 page-transition'>
         {/* 오디오 요소 추가 */}
         <audio ref={audioRef} className='hidden' />
 
-        <div className='mb-6'>
+        <div className='mb-6' style={{ animation: 'slideIn 0.5s ease-out' }}>
           <Link
             href='/'
-            className='flex items-center text-primary hover:underline'
+            className='flex items-center text-primary hover:underline button-hover'
           >
             <ArrowLeft className='mr-2 h-5 w-5' />
             <span className='text-lg'>홈으로 돌아가기</span>
@@ -604,7 +604,10 @@ export default function ChatbotPage() {
         </div>
 
         {/* 챗봇 페이지 디자인 업데이트 */}
-        <Card className='max-w-4xl mx-auto border border-border shadow-inflearn bg-white'>
+        <Card
+          className='max-w-4xl mx-auto border border-border shadow-inflearn bg-white card-hover'
+          style={{ animation: 'scaleIn 0.6s ease-out' }}
+        >
           <CardHeader className='border-b border-border bg-primary'>
             <CardTitle className='text-2xl font-bold text-secondary'>
               AI 챗봇
@@ -638,11 +641,12 @@ export default function ChatbotPage() {
                     {messages.map((message, index) => (
                       <div
                         key={index}
-                        className={`flex ${
+                        className={`flex message-animation ${
                           message.role === 'user'
                             ? 'justify-end'
                             : 'justify-start'
                         }`}
+                        style={{ animationDelay: `${index * 0.1}s` }}
                       >
                         <div
                           className={`max-w-[80%] rounded-lg p-3 ${
@@ -731,7 +735,7 @@ export default function ChatbotPage() {
                       </div>
                     ))}
                     {isLoading && (
-                      <div className='flex justify-start'>
+                      <div className='flex justify-start message-animation'>
                         <div className='max-w-[80%] rounded-lg p-3 bg-muted'>
                           <p className='text-lg'>응답을 생성 중입니다...</p>
                         </div>
@@ -785,8 +789,27 @@ export default function ChatbotPage() {
                           lineHeight: '1.5',
                           whiteSpace: 'pre-wrap',
                           overflowY: 'auto',
+                          animation: 'fadeIn 0.3s ease-out',
+                          boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)',
+                          transition: 'all 0.2s ease',
                         }}
                       />
+                      <div className='flex justify-center mt-2'>
+                        <div className='flex space-x-1'>
+                          <div
+                            className='w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse'
+                            style={{ animationDelay: '0s' }}
+                          ></div>
+                          <div
+                            className='w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse'
+                            style={{ animationDelay: '0.2s' }}
+                          ></div>
+                          <div
+                            className='w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse'
+                            style={{ animationDelay: '0.4s' }}
+                          ></div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -825,7 +848,7 @@ export default function ChatbotPage() {
         </Card>
       </div>
       <AlertDialog open={showTimeoutAlert} onOpenChange={setShowTimeoutAlert}>
-        <AlertDialogContent>
+        <AlertDialogContent style={{ animation: 'scaleIn 0.3s ease-out' }}>
           <AlertDialogHeader>
             <AlertDialogTitle>전송 실패</AlertDialogTitle>
             <AlertDialogDescription>
@@ -833,7 +856,10 @@ export default function ChatbotPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setShowTimeoutAlert(false)}>
+            <AlertDialogAction
+              onClick={() => setShowTimeoutAlert(false)}
+              className='button-hover'
+            >
               확인
             </AlertDialogAction>
           </AlertDialogFooter>

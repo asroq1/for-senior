@@ -48,19 +48,21 @@ export default function Home() {
   }
 
   return (
-    <div className='container mx-auto px-4 py-12'>
+    <div className='container mx-auto px-4 py-12 page-transition'>
       <header className='mb-12 text-center'>
-        <h1 className='text-4xl font-bold tracking-tight text-primary mb-4'>
+        <h1 className='text-4xl font-bold tracking-tight text-primary mb-4' 
+            style={{animation: 'fadeIn 0.8s ease-out'}}>
           시니어 서비스
         </h1>
-        <p className='text-xl text-muted-foreground'>
+        <p className='text-xl text-muted-foreground'
+           style={{animation: 'fadeIn 1s ease-out 0.2s both'}}>
           편리한 디지털 서비스를 경험해보세요
         </p>
       </header>
 
       {isFirstVisit ? (
-        <div className='max-w-2xl mx-auto text-center'>
-          <Card className='border-2 border-primary/20 bg-gradient-to-br from-white to-primary/5 shadow-lg'>
+        <div className='max-w-2xl mx-auto text-center' style={{animation: 'scaleIn 0.8s ease-out 0.4s both'}}>
+          <Card className='border-2 border-primary/20 bg-gradient-to-br from-white to-primary/5 shadow-lg card-hover'>
             <CardHeader>
               <CardTitle className='text-3xl text-primary'>환영합니다!</CardTitle>
               <CardDescription className='text-xl mt-2'>
@@ -78,7 +80,7 @@ export default function Home() {
               </div>
               <Button 
                 size='lg' 
-                className='text-lg px-8 py-6'
+                className='text-lg px-8 py-6 button-hover'
                 onClick={handleStartClick}
               >
                 시작하기 <ArrowRight className='ml-2 h-5 w-5' />
@@ -89,7 +91,8 @@ export default function Home() {
       ) : (
         <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
           <Link href='/chatbot'>
-            <Card className='h-full transition-all hover:shadow-lg border-2 border-primary/20 bg-gradient-to-br from-white to-primary/5'>
+            <Card className='h-full transition-all hover:shadow-lg border-2 border-primary/20 bg-gradient-to-br from-white to-primary/5 card-hover'
+                  style={{animation: 'fadeIn 0.6s ease-out 0.2s both'}}>
               <CardHeader className='pb-2'>
                 <CardTitle className='text-2xl flex items-center gap-2 text-primary'>
                   <LucideMessageSquare className='h-6 w-6' />

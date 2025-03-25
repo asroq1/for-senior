@@ -59,3 +59,64 @@ body {
     --ring: 151 55% 42%;
   }
 }
+
+/* 기존 코드 아래에 추가 */
+
+/* 부드러운 페이드인 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 부드러운 스케일 애니메이션 */
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* 물결 효과 애니메이션 */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* 부드러운 슬라이드 애니메이션 */
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* 페이지 전환 애니메이션 */
+.page-transition {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* 카드 호버 효과 */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* 버튼 호버 효과 */
+.button-hover {
+  transition: transform 0.2s ease;
+}
+
+.button-hover:hover {
+  transform: translateY(-2px);
+}
+
+/* 메시지 애니메이션 */
+.message-animation {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* 마이크 버튼 펄스 효과 */
+.mic-pulse {
+  animation: pulse 2s infinite ease-in-out;
+}

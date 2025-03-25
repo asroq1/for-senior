@@ -10,7 +10,7 @@ interface ImageUploadProps {
   disabled?: boolean
 }
 
-export function ImageUpload({ onImageSelect, disabled = false }: ImageUploadProps) {
+export function ImageUpload({ onImageSelect, disabled }: ImageUploadProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
