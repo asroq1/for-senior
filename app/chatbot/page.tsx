@@ -171,7 +171,12 @@ export default function ChatbotPage() {
         requestData.imageUrl = uploadedUrl
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+      // API URL 설정 - 프록시 사용
+      const apiUrl = '/api/proxy/chat';
+      
+      console.log('API 요청 URL:', apiUrl);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
