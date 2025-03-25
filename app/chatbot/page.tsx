@@ -781,6 +781,11 @@ export default function ChatbotPage() {
                         value={interimTranscript}
                         readOnly
                         placeholder='음성을 인식하는 중...'
+                        style={{
+                          lineHeight: '1.5',
+                          whiteSpace: 'pre-wrap',
+                          overflowY: 'auto',
+                        }}
                       />
                     </div>
                   )}
