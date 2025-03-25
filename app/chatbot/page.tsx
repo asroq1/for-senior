@@ -128,7 +128,7 @@ export default function ChatbotPage() {
   // STT API 요청 함수 (단일 구현)
   const requestSTT = async (text: string, imageData?: string) => {
     setIsLoading(true)
-
+    console.log('STT 요청을 보냅니다:', text)
     // 음성 녹음 중이라면 즉시 중지
     if (isRecording && recognitionRef.current) {
       try {
@@ -157,7 +157,11 @@ export default function ChatbotPage() {
 
     try {
       // 요청 데이터 준비
-      const requestData: { message: string; imageUrl?: string } = {
+      const requestData: {
+        message: string
+        imageUrl?: string
+        user_id: string
+      } = {
         message: text,
         user_id: 'user123',
       }
@@ -335,7 +339,18 @@ export default function ChatbotPage() {
           setInterimTranscript(interimTranscript)
 
           // 최종 결과가 있으면 메시지에 추가
-          if (finalTranscript !== '') {
+          if (finalTranscript !== '' && !isLoading) {
+            // 녹음 중지
+            if (recognitionRef.current) {
+              try {
+                recognitionRef.current.stop()
+                setIsRecording(false)
+                console.log('최종 결과 감지로 음성 녹음을 중지합니다.')
+              } catch (error) {
+                console.error('음성 인식 중지 실패:', error)
+              }
+            }
+
             setMessages(prev => [
               ...prev,
               { role: 'user', content: finalTranscript },
@@ -343,7 +358,7 @@ export default function ChatbotPage() {
 
             // STT API 요청
             requestSTT(finalTranscript)
-            console.log('음성 녹음을 중지합니다.')
+            console.log('음성 녹음을 중지하고 API 요청을 보냅니다.')
           }
         }
 
@@ -588,38 +603,38 @@ export default function ChatbotPage() {
           </Link>
         </div>
 
-        {/* 챗봇 페이지 디자인을 개선합니다 */}
-        <Card className='max-w-4xl mx-auto border-2 border-primary/20 bg-white'>
-          <CardHeader className='bg-gradient-to-r from-primary/10 to-primary/5 rounded-t-lg'>
-            <CardTitle className='text-3xl text-center text-primary'>
+        {/* 챗봇 페이지 디자인 업데이트 */}
+        <Card className='max-w-4xl mx-auto border border-border shadow-inflearn bg-white'>
+          <CardHeader className='border-b border-border bg-primary'>
+            <CardTitle className='text-2xl font-bold text-secondary'>
               AI 챗봇
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='p-0'>
             <Tabs
               defaultValue='text'
               value={activeTab}
               onValueChange={setActiveTab}
               className='w-full'
             >
-              <TabsList className='grid w-full grid-cols-2 mb-6 bg-muted'>
+              <TabsList className='grid w-full grid-cols-2 rounded-none border-b'>
                 <TabsTrigger
                   value='text'
-                  className='text-lg py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground'
+                  className='text-base py-3 rounded-none data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary'
                 >
                   텍스트 모드
                 </TabsTrigger>
                 <TabsTrigger
                   value='voice'
-                  className='text-lg py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground'
+                  className='text-base py-3 rounded-none data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary'
                 >
                   음성 모드
                 </TabsTrigger>
               </TabsList>
 
-              <div className='mb-4'>
-                <ScrollArea className='h-[400px] p-4 border rounded-md bg-muted/30'>
-                  <div className='space-y-4'>
+              <div className='p-4'>
+                <ScrollArea className='h-[400px] rounded-md border border-border bg-secondary/20'>
+                  <div className='space-y-4 p-4'>
                     {messages.map((message, index) => (
                       <div
                         key={index}
@@ -783,7 +798,7 @@ export default function ChatbotPage() {
                     className={`h-20 w-20 rounded-full ${
                       isRecording
                         ? 'bg-destructive hover:bg-destructive/90'
-                        : 'bg-secondary hover:bg-secondary/90'
+                        : 'bg-primary hover:bg-secondary/90'
                     }`}
                     disabled={isLoading}
                   >

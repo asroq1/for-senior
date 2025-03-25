@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui,
+    Roboto, sans-serif;
 }
 
 @layer utilities {
@@ -14,57 +15,47 @@ body {
 
 @layer base {
   :root {
-    --background: 40 30% 96%; /* 크림색 배경 */
-    --foreground: 215 25% 27%;
+    --background: 0 0% 100%;
+    --foreground: 210 20% 25%;
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 210 20% 25%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
-    --primary: 210 80% 42%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 25 95% 53%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 210 20% 92%;
-    --muted-foreground: 215 25% 27%;
-    --accent: 142 71% 45%;
-    --accent-foreground: 0 0% 98%;
+    --popover-foreground: 210 20% 25%;
+    --primary: 151 55% 42%; /* 인프런 메인 녹색 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 210 20% 25%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 40% 50%;
+    --accent: 151 55% 97%; /* 연한 녹색 배경 */
+    --accent-foreground: 151 55% 42%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 215 25% 27%;
-    --radius: 0.75rem;
+    --ring: 151 55% 42%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 215 28% 17%;
-    --foreground: 210 20% 98%;
-    --card: 215 28% 17%;
-    --card-foreground: 210 20% 98%;
-    --popover: 215 28% 17%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 210 80% 42%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 25 95% 53%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 215 25% 27%;
-    --muted-foreground: 210 20% 92%;
-    --accent: 142 71% 45%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 215 25% 27%;
-    --input: 215 25% 27%;
-    --ring: 210 80% 42%;
+    --background: 210 25% 10%;
+    --foreground: 0 0% 95%;
+    --card: 210 25% 12%;
+    --card-foreground: 0 0% 95%;
+    --popover: 210 25% 12%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 151 55% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 25% 18%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 210 25% 18%;
+    --muted-foreground: 210 20% 70%;
+    --accent: 151 55% 18%;
+    --accent-foreground: 151 55% 42%;
+    --destructive: 0 74% 50%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 210 25% 20%;
+    --input: 210 25% 20%;
+    --ring: 151 55% 42%;
   }
 }
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-

@@ -7,12 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  LucideMessageSquare,
-  LucideFileText,
-  LucideNewspaper,
-  LucideImage,
-} from 'lucide-react'
+import { LucideMessageSquare } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -57,63 +52,6 @@ export default function Home() {
                   음성 모드
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href='/welfare'>
-          <Card className='h-full transition-all hover:shadow-lg border-2 border-secondary/20 bg-gradient-to-br from-white to-secondary/5'>
-            <CardHeader className='pb-2'>
-              <CardTitle className='text-2xl flex items-center gap-2 text-secondary'>
-                <LucideFileText className='h-6 w-6' />
-                복지정보
-              </CardTitle>
-              <CardDescription className='text-lg'>
-                다양한 복지 혜택을 알아보세요
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className='text-lg'>
-                시니어를 위한 복지 정보와 혜택을 한눈에 확인할 수 있습니다.
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href='/news'>
-          <Card className='h-full transition-all hover:shadow-lg border-2 border-accent/20 bg-gradient-to-br from-white to-accent/5'>
-            <CardHeader className='pb-2'>
-              <CardTitle className='text-2xl flex items-center gap-2 text-accent'>
-                <LucideNewspaper className='h-6 w-6' />
-                노인 정보 기사
-              </CardTitle>
-              <CardDescription className='text-lg'>
-                최신 정보를 쉽게 확인하세요
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className='text-lg'>
-                시니어에게 유용한 정보와 뉴스를 요약해서 제공합니다.
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href='/image-analyzer'>
-          <Card className='h-full transition-all hover:shadow-lg border-2 border-secondary/20 bg-gradient-to-br from-white to-secondary/5'>
-            <CardHeader className='pb-2'>
-              <CardTitle className='text-2xl flex items-center gap-2 text-secondary'>
-                <LucideImage className='h-6 w-6' />
-                이미지 분석
-              </CardTitle>
-              <CardDescription className='text-lg'>
-                이미지를 업로드하고 설명을 받아보세요
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className='text-lg'>
-                사진을 업로드하면 AI가 이미지를 분석하고 설명해 드립니다.
-              </p>
             </CardContent>
           </Card>
         </Link>
