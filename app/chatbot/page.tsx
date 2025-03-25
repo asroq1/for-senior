@@ -44,7 +44,7 @@ export default function ChatbotPage() {
   const [interimTranscript, setInterimTranscript] = useState('')
   // 오디오 URL 저장
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
-  // 오디오 요소 참조
+  // 오디오 요속 참조
   const audioRef = useRef<HTMLAudioElement | null>(null)
   // 이미지 데이터 저장
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -191,7 +191,7 @@ export default function ChatbotPage() {
       // 응답에서 오디오 URL을 가져옵니다
       if (data.audioUrl) {
         setAudioUrl(data.audioUrl)
-        // 오디오 요소가 있으면 재생합니다
+        // 오디오 요속이 있으면 재생합니다
         if (audioRef.current) {
           audioRef.current.src = data.audioUrl
           audioRef.current.play()
@@ -519,6 +519,8 @@ export default function ChatbotPage() {
   // TTS 관련 상태 추가
   const [isTtsLoading, setIsTtsLoading] = useState(false)
   const [isTtsPlaying, setIsTtsPlaying] = useState(false)
+  // 자동 녹음 재시작 설정
+  const [autoRecord, setAutoRecord] = useState(true)
   const { toast } = useToast()
 
   // TTS API 호출 함수 추가
@@ -557,7 +559,24 @@ export default function ChatbotPage() {
       if (audioRef.current) {
         audioRef.current.src = audioUrl
         audioRef.current.onplay = () => setIsTtsPlaying(true)
-        audioRef.current.onended = () => setIsTtsPlaying(false)
+        audioRef.current.onended = () => {
+          setIsTtsPlaying(false)
+
+          // TTS 재생이 끝나면 자동으로 녹음 시작 (autoRecord가 true일 때)
+          if (autoRecord && activeTab === 'voice') {
+            setTimeout(() => {
+              if (!isRecording && recognitionRef.current) {
+                try {
+                  console.log('TTS 재생 완료 후 자동 녹음 시작')
+                  recognitionRef.current.start()
+                  setIsRecording(true)
+                } catch (error) {
+                  console.error('자동 녹음 시작 실패:', error)
+                }
+              }
+            }, 500) // 0.5초 후 녹음 시작 (약간의 지연을 두어 사용자가 인지할 수 있도록)
+          }
+        }
         audioRef.current.onpause = () => setIsTtsPlaying(false)
         audioRef.current.play()
       }
@@ -590,7 +609,7 @@ export default function ChatbotPage() {
   return (
     <>
       <div className='container mx-auto px-4 py-8 page-transition'>
-        {/* 오디오 요소 추가 */}
+        {/* 오디오 요속 추가 */}
         <audio ref={audioRef} className='hidden' />
 
         <div className='mb-6' style={{ animation: 'slideIn 0.5s ease-out' }}>
@@ -609,9 +628,27 @@ export default function ChatbotPage() {
           style={{ animation: 'scaleIn 0.6s ease-out' }}
         >
           <CardHeader className='border-b border-border bg-primary'>
-            <CardTitle className='text-2xl font-bold text-secondary'>
-              AI 챗봇
-            </CardTitle>
+            <div className='flex justify-between items-center'>
+              <CardTitle className='text-2xl font-bold text-secondary'>
+                AI 챗봇
+              </CardTitle>
+              {activeTab === 'voice' && (
+                <div className='flex items-center'>
+                  <label className='cursor-pointer flex items-center'>
+                    <input
+                      type='checkbox'
+                      checked={autoRecord}
+                      onChange={() => setAutoRecord(!autoRecord)}
+                      className='sr-only peer'
+                    />
+                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    <span className='ml-2 text-sm font-medium text-white'>
+                      자동 녹음
+                    </span>
+                  </label>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent className='p-0'>
             <Tabs
@@ -777,12 +814,12 @@ export default function ChatbotPage() {
 
               <TabsContent value='voice' className='mt-0'>
                 <div className='flex flex-col items-center'>
-                  {/* 음성 인식 중간 결과를 표시할 텍스트 영역 */}
+                  {/* 음성 인식 중간 결과를 표시할 텍스트 영역 - 모바일 환경에서도 잘 보이도록 수정 */}
                   {isRecording && (
                     <div className='w-full mb-4'>
                       <textarea
                         className='w-full p-3 border rounded-md bg-muted/20 text-lg min-h-[100px]'
-                        value={interimTranscript}
+                        value={interimTranscript || '음성을 인식하는 중...'}
                         readOnly
                         placeholder='음성을 인식하는 중...'
                         style={{
