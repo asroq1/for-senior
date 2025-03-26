@@ -49,7 +49,7 @@ export default function ChatbotPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   // 이미지 데이터 저장
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-
+  const [userName, setUserName] = useState('')
   // 음성 인식 인스턴스를 저장할 참조 생성
   const recognitionRef = useRef<any>(null)
   const [showTimeoutAlert, setShowTimeoutAlert] = useState(false)
@@ -143,7 +143,7 @@ export default function ChatbotPage() {
   // STT API 요청 함수 (단일 구현)
   const requestSTT = async (text: string, imageData?: string) => {
     setIsLoading(true)
-    console.log('STT 요청을 보냅니다:', text)
+
     // 음성 녹음 중이라면 즉시 중지
     if (isRecording && recognitionRef.current) {
       try {
@@ -167,7 +167,7 @@ export default function ChatbotPage() {
     const timeoutId = setTimeout(() => {
       controller.abort()
       setShowTimeoutAlert(true)
-    }, 10000) // 10 seconds timeout
+    }, 30000) // 10 seconds timeout
 
     try {
       // 요청 데이터 준비
@@ -177,7 +177,7 @@ export default function ChatbotPage() {
         user_id: string
       } = {
         message: text,
-        user_id: localStorage.getItem('user_id') || '',
+        user_id: '홍길동',
       }
 
       // 업로드된 이미지 URL이 있으면 추가
@@ -271,6 +271,10 @@ export default function ChatbotPage() {
 
   // 음성 인식 초기화
   useEffect(() => {
+    // 음성 인식 인스턴스 생성
+    const storedName = localStorage.getItem('user_id') || ''
+    setUserName(storedName)
+
     if (typeof window !== 'undefined') {
       // 브라우저가 SpeechRecognition을 지원하는지 확인
       const SpeechRecognition =
@@ -638,7 +642,7 @@ export default function ChatbotPage() {
           <CardHeader className='border-b border-border bg-primary'>
             <div className='flex justify-between items-center'>
               <CardTitle className='text-2xl font-bold text-secondary'>
-                AI 챗봇
+                {userName}님의 AI 손주
               </CardTitle>
               {activeTab === 'voice' && (
                 <div className='flex items-center space-x-2 mt-2'>
@@ -719,7 +723,7 @@ export default function ChatbotPage() {
                         >
                           {/* Message content remains the same */}
                           <div
-                            className={`max-w-[80%] rounded-lg p-3 ${
+                            className={`max-w-[80%] rounded-lg p-3 mb-4 ${
                               message.role === 'user'
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-muted'
@@ -805,7 +809,7 @@ export default function ChatbotPage() {
                         </div>
                       ))}
                       {isLoading && (
-                        <div className='flex justify-start message-animation'>
+                        <div className='flex justify-start message-animation mb-4'>
                           <div className='max-w-[80%] rounded-lg p-3 bg-muted'>
                             <p className='text-lg'>응답을 생성 중입니다...</p>
                           </div>

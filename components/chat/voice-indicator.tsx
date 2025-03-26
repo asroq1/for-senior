@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeRaw from 'rehype-raw'
 
 interface VoiceIndicatorProps {
   isRecording?: boolean
@@ -41,6 +44,7 @@ const VoiceIndicator = ({
   return (
     <div className='flex flex-col items-center justify-center h-[400px] rounded-md border border-border bg-secondary/20 p-4'>
       {isRecording ? (
+        // Recording state remains unchanged
         <div className='flex flex-col items-center'>
           <div className='mb-4'>
             <Image
@@ -82,17 +86,44 @@ const VoiceIndicator = ({
               className='rounded-full'
             />
           </div>
-          <div className='text-lg font-medium max-w-md text-center'>
-            {displayText}
+          {/* Updated text display with overflow handling and markdown support */}
+          <div className='text-lg font-medium max-w-md text-center w-full overflow-y-auto max-h-[200px] prose prose-sm dark:prose-invert'>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
+              components={{
+                // Code block styling
+                code({ node, className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || '')
+                  return match ? (
+                    <div className='rounded bg-gray-800 p-2 my-2'>
+                      <code className={`${className} text-sm`} {...props}>
+                        {children}
+                      </code>
+                    </div>
+                  ) : (
+                    <code
+                      className='bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm'
+                      {...props}
+                    >
+                      {children}
+                    </code>
+                  )
+                },
+                // Link styling
+                a({ node, className, children, ...props }) {
+                  return (
+                    <a className='text-primary hover:underline' {...props}>
+                      {children}
+                    </a>
+                  )
+                },
+              }}
+            >
+              {displayText}
+            </ReactMarkdown>
             <span className='inline-block w-2 h-4 ml-1 bg-primary animate-blink'></span>
           </div>
-        </div>
-      ) : isLoading ? (
-        <div className='flex flex-col items-center'>
-          <div className='mb-4'>
-            <div className='w-32 h-32 border-4 border-primary border-t-transparent rounded-full animate-spin'></div>
-          </div>
-          <p className='text-lg font-medium'>응답을 기다리는 중입니다...</p>
         </div>
       ) : (
         <div className='flex flex-col items-center text-center'>
