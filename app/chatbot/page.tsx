@@ -23,6 +23,7 @@ import {
   AlertDialogAction,
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/components/ui/use-toast'
+import VoiceIndicator from '@/components/chat/voice-indicator'
 
 // Web Speech API 타입 선언
 declare global {
@@ -48,15 +49,15 @@ export default function ChatbotPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   // 이미지 데이터 저장
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  // 업로드된 이미지 URL 저장
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
 
   // 음성 인식 인스턴스를 저장할 참조 생성
   const recognitionRef = useRef<any>(null)
   const [showTimeoutAlert, setShowTimeoutAlert] = useState(false)
 
   // 이미지 업로드 함수
-  const uploadImage = async (imageData: string): Promise<string | null> => {
+  const uploadImage = async (
+    imageData: string
+  ): Promise<string | null | undefined> => {
     try {
       // Base64 문자열에서 파일 데이터 추출
       const base64WithoutPrefix = imageData.split(';base64,').pop()
@@ -99,7 +100,7 @@ export default function ChatbotPage() {
         fileSize: file.size,
         fileType: file.type,
       })
-
+      setIsLoading(true)
       // 이미지 업로드 요청
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/upload-image`,
@@ -118,10 +119,24 @@ export default function ChatbotPage() {
       }
 
       const data = await response.json()
-      return data.imageUrl // 서버에서 반환한 이미지 URL
+
+      // 응답 메시지 추가
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: data.result },
+      ])
+
+      // 응답 텍스트가 있으면 TTS 생성 함수 호출
+      if (data.result) {
+        generateTTS(data.result)
+      }
+
+      return data.imageUrl || null
     } catch (error) {
       console.error('이미지 업로드 오류:', error)
       return null
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -144,10 +159,9 @@ export default function ChatbotPage() {
     let uploadedUrl = null
 
     // 이미지가 있으면 먼저 업로드
-    if (imageData) {
-      uploadedUrl = await uploadImage(imageData)
-      setUploadedImageUrl(uploadedUrl)
-    }
+    // if (imageData) {
+    //   uploadedUrl = await uploadImage(imageData)
+    // }
 
     const controller = new AbortController()
     const timeoutId = setTimeout(() => {
@@ -163,7 +177,7 @@ export default function ChatbotPage() {
         user_id: string
       } = {
         message: text,
-        user_id: 'user123',
+        user_id: localStorage.getItem('user_id') || '',
       }
 
       // 업로드된 이미지 URL이 있으면 추가
@@ -172,9 +186,9 @@ export default function ChatbotPage() {
       }
 
       // API URL 설정 - 프록시 사용
-      const apiUrl = '/api/proxy/chat';
-      
-      console.log('API 요청 URL:', apiUrl);
+      const apiUrl = '/api/proxy/chat'
+
+      console.log('API 요청 URL:', apiUrl)
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -600,17 +614,6 @@ export default function ChatbotPage() {
     }
   }
 
-  // TTS 재생/일시정지 토글 함수
-  const toggleTtsPlayback = () => {
-    if (!audioRef.current) return
-
-    if (isTtsPlaying) {
-      audioRef.current.pause()
-    } else {
-      audioRef.current.play()
-    }
-  }
-
   return (
     <>
       <div className='container mx-auto px-4 py-8 page-transition'>
@@ -638,19 +641,20 @@ export default function ChatbotPage() {
                 AI 챗봇
               </CardTitle>
               {activeTab === 'voice' && (
-                <div className='flex items-center'>
-                  <label className='cursor-pointer flex items-center'>
-                    <input
-                      type='checkbox'
-                      checked={autoRecord}
-                      onChange={() => setAutoRecord(!autoRecord)}
-                      className='sr-only peer'
-                    />
-                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                    <span className='ml-2 text-sm font-medium text-white'>
-                      자동 녹음
-                    </span>
-                  </label>
+                <div className='flex items-center space-x-2 mt-2'>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={() => setAutoRecord(!autoRecord)}
+                    className={`text-xs flex items-center`}
+                  >
+                    <span className='mr-1'>자동 녹음</span>
+                    {autoRecord ? (
+                      <span className='h-2 w-2 rounded-full bg-red-500 animate-pulse'></span>
+                    ) : (
+                      <span className='h-2 w-2 rounded-full bg-gray-300'></span>
+                    )}
+                  </Button>
                 </div>
               )}
             </div>
@@ -664,135 +668,189 @@ export default function ChatbotPage() {
             >
               <TabsList className='grid w-full grid-cols-2 rounded-none border-b'>
                 <TabsTrigger
-                  value='text'
-                  className='text-base py-3 rounded-none data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary'
-                >
-                  텍스트 모드
-                </TabsTrigger>
-                <TabsTrigger
                   value='voice'
                   className='text-base py-3 rounded-none data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary'
                 >
                   음성 모드
                 </TabsTrigger>
+                <TabsTrigger
+                  value='text'
+                  className='text-base py-3 rounded-none data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary'
+                >
+                  텍스트 모드
+                </TabsTrigger>
               </TabsList>
-
               <div className='p-4'>
-                <ScrollArea className='h-[400px] rounded-md border border-border bg-secondary/20'>
-                  <div className='space-y-4 p-4'>
-                    {messages.map((message, index) => (
-                      <div
-                        key={index}
-                        className={`flex message-animation ${
-                          message.role === 'user'
-                            ? 'justify-end'
-                            : 'justify-start'
-                        }`}
-                        style={{ animationDelay: `${index * 0.1}s` }}
-                      >
+                {activeTab === 'voice' ? (
+                  <VoiceIndicator
+                    isRecording={isRecording}
+                    isLoading={isLoading}
+                    isTtsPlaying={isTtsPlaying}
+                    interimTranscript={interimTranscript}
+                    aiResponse={
+                      messages.length > 0 &&
+                      messages[messages.length - 1].role === 'assistant'
+                        ? messages[messages.length - 1].content
+                        : ''
+                    }
+                  />
+                ) : (
+                  <ScrollArea
+                    className='h-[400px] rounded-md border border-border bg-secondary/20'
+                    scrollHideDelay={0}
+                  >
+                    <div
+                      className='space-y-4 p-4 flex flex-col-reverse'
+                      style={{
+                        minHeight: '100%',
+                        justifyContent: 'flex-start',
+                      }}
+                    >
+                      {/* Reverse the messages array to display newest at the bottom */}
+                      {[...messages].reverse().map((message, index) => (
                         <div
-                          className={`max-w-[80%] rounded-lg p-3 ${
+                          key={index}
+                          className={`flex message-animation mb-4 ${
                             message.role === 'user'
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted'
+                              ? 'justify-end'
+                              : 'justify-start'
                           }`}
+                          style={{ animationDelay: `${index * 0.1}s` }}
                         >
-                          {message.image && (
-                            <div className='mb-2 rounded overflow-hidden'>
-                              <Image
-                                src={message.image}
-                                alt='Uploaded image'
-                                width={300}
-                                height={200}
-                                className='object-contain'
-                              />
-                            </div>
-                          )}
+                          {/* Message content remains the same */}
+                          <div
+                            className={`max-w-[80%] rounded-lg p-3 ${
+                              message.role === 'user'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted'
+                            }`}
+                          >
+                            {message.image && (
+                              <div className='mb-2 rounded overflow-hidden'>
+                                <Image
+                                  src={message.image}
+                                  alt='Uploaded image'
+                                  width={300}
+                                  height={200}
+                                  className='object-contain'
+                                />
+                              </div>
+                            )}
 
-                          {message.role === 'assistant' ? (
-                            <div className='prose prose-sm dark:prose-invert max-w-none'>
-                              <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                rehypePlugins={[rehypeRaw]}
-                                components={{
-                                  // 코드 블록 스타일링
-                                  code({
-                                    node,
-                                    className,
-                                    children,
-                                    ...props
-                                  }) {
-                                    const match = /language-(\w+)/.exec(
-                                      className || ''
-                                    )
-                                    return match ? (
-                                      <div className='rounded bg-gray-800 p-2 my-2'>
+                            {message.role === 'assistant' ? (
+                              <div className='prose prose-sm dark:prose-invert max-w-none'>
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  rehypePlugins={[rehypeRaw]}
+                                  components={{
+                                    // 코드 블록 스타일링
+                                    code({
+                                      node,
+                                      className,
+                                      children,
+                                      ...props
+                                    }) {
+                                      const match = /language-(\w+)/.exec(
+                                        className || ''
+                                      )
+                                      return match ? (
+                                        <div className='rounded bg-gray-800 p-2 my-2'>
+                                          <code
+                                            className={`${className} text-sm`}
+                                            {...props}
+                                          >
+                                            {children}
+                                          </code>
+                                        </div>
+                                      ) : (
                                         <code
-                                          className={`${className} text-sm`}
+                                          className='bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm'
                                           {...props}
                                         >
                                           {children}
                                         </code>
-                                      </div>
-                                    ) : (
-                                      <code
-                                        className='bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm'
-                                        {...props}
-                                      >
-                                        {children}
-                                      </code>
-                                    )
-                                  },
-                                  // 링크 스타일링
-                                  a({ node, className, children, ...props }) {
-                                    return (
-                                      <a
-                                        className='text-primary hover:underline'
-                                        {...props}
-                                      >
-                                        {children}
-                                      </a>
-                                    )
-                                  },
-                                }}
+                                      )
+                                    },
+                                    // 링크 스타일링
+                                    a({ node, className, children, ...props }) {
+                                      return (
+                                        <a
+                                          className='text-primary hover:underline'
+                                          {...props}
+                                        >
+                                          {children}
+                                        </a>
+                                      )
+                                    },
+                                  }}
+                                >
+                                  {message.content}
+                                </ReactMarkdown>
+                              </div>
+                            ) : (
+                              <p className='text-lg'>{message.content}</p>
+                            )}
+                            {message.role === 'assistant' && audioUrl && (
+                              <Button
+                                variant='ghost'
+                                size='sm'
+                                className='mt-2 h-8 w-8 p-0'
+                                onClick={() => audioRef.current?.play()}
+                                title='음성으로 듣기'
                               >
-                                {message.content}
-                              </ReactMarkdown>
-                            </div>
-                          ) : (
-                            <p className='text-lg'>{message.content}</p>
-                          )}
-                          {message.role === 'assistant' && audioUrl && (
-                            <Button
-                              variant='ghost'
-                              size='sm'
-                              className='mt-2 h-8 w-8 p-0'
-                              onClick={() => audioRef.current?.play()}
-                              title='음성으로 듣기'
-                            >
-                              <Volume2 className='h-4 w-4' />
-                            </Button>
-                          )}
+                                <Volume2 className='h-4 w-4' />
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    {isLoading && (
-                      <div className='flex justify-start message-animation'>
-                        <div className='max-w-[80%] rounded-lg p-3 bg-muted'>
-                          <p className='text-lg'>응답을 생성 중입니다...</p>
+                      ))}
+                      {isLoading && (
+                        <div className='flex justify-start message-animation'>
+                          <div className='max-w-[80%] rounded-lg p-3 bg-muted'>
+                            <p className='text-lg'>응답을 생성 중입니다...</p>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
+                      )}
+                    </div>
+                  </ScrollArea>
+                )}
               </div>
 
-              <TabsContent value='text' className='mt-0'>
+              <TabsContent value='text' className='mt-0 p-4'>
                 <div className='flex flex-col space-y-3'>
                   <ImageUpload
                     onImageSelect={handleImageSelect}
                     disabled={isLoading}
                   />
+                  {selectedImage && (
+                    <div className='flex items-center justify-between p-2 bg-muted/30 rounded-md'>
+                      <span className='text-sm truncate flex-1'>
+                        이미지가 선택되었습니다
+                      </span>
+                      <div className='flex space-x-2'>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={() => setSelectedImage(null)}
+                          className='text-xs'
+                        >
+                          취소
+                        </Button>
+                        <Button
+                          variant='secondary'
+                          size='sm'
+                          onClick={() => {
+                            // 이미지만 전송
+                            uploadImage(selectedImage)
+                          }}
+                          disabled={isLoading}
+                          className='text-xs'
+                        >
+                          이미지만 전송
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   <div className='flex space-x-2'>
                     <Input
                       value={input}
@@ -800,20 +858,61 @@ export default function ChatbotPage() {
                       placeholder='메시지를 입력하세요...'
                       className='text-lg p-6 border-primary/30 focus-visible:ring-primary'
                       onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          handleSendMessage()
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          if (input.trim()) {
+                            // 텍스트만 전송
+                            setMessages(prev => [
+                              ...prev,
+                              { role: 'user', content: input },
+                            ])
+                            requestSTT(input)
+                            setInput('')
+                          }
                         }
                       }}
                     />
                     <Button
-                      onClick={handleSendMessage}
+                      onClick={() => {
+                        if (input.trim()) {
+                          // 텍스트만 전송
+                          setMessages(prev => [
+                            ...prev,
+                            { role: 'user', content: input },
+                          ])
+                          requestSTT(input)
+                          setInput('')
+                        }
+                      }}
                       size='icon'
                       className='h-14 w-14 bg-primary hover:bg-primary/90'
-                      disabled={isLoading}
+                      disabled={isLoading || !input.trim()}
                     >
                       <Send className='h-6 w-6' />
                     </Button>
                   </div>
+
+                  {selectedImage && input.trim() && (
+                    <Button
+                      onClick={() => {
+                        // 텍스트와 이미지 함께 전송
+                        setMessages(prev => [
+                          ...prev,
+                          {
+                            role: 'user',
+                            content: input,
+                            image: selectedImage,
+                          },
+                        ])
+                        requestSTT(input, selectedImage)
+                        setInput('')
+                      }}
+                      className='w-full mt-2 bg-secondary hover:bg-secondary/90'
+                      disabled={isLoading}
+                    >
+                      텍스트와 이미지 함께 전송
+                    </Button>
+                  )}
                 </div>
               </TabsContent>
 
@@ -821,9 +920,9 @@ export default function ChatbotPage() {
                 <div className='flex flex-col items-center'>
                   {/* 음성 인식 중간 결과를 표시할 텍스트 영역 - 모바일 환경에서도 잘 보이도록 수정 */}
                   {isRecording && (
-                    <div className='w-full mb-4'>
+                    <div className='w-full mb-4 p-4'>
                       <textarea
-                        className='w-full p-3 border rounded-md bg-muted/20 text-lg min-h-[100px]'
+                        className='w-full p-4 border rounded-md bg-muted/20 text-lg min-h-[100px]'
                         value={interimTranscript || '음성을 인식하는 중...'}
                         readOnly
                         placeholder='음성을 인식하는 중...'
@@ -856,32 +955,43 @@ export default function ChatbotPage() {
                   )}
 
                   <div className='w-full mb-4'>
-                    <ImageUpload
+                    {/* <ImageUpload
                       onImageSelect={handleImageSelect}
                       disabled={isLoading || isRecording}
-                    />
+                    /> */}
                   </div>
 
                   <Button
                     onClick={toggleRecording}
                     size='lg'
-                    className={`h-20 w-20 rounded-full ${
+                    className={`h-20 w-20 rounded-full transition-all duration-300 ${
                       isRecording
-                        ? 'bg-destructive hover:bg-destructive/90'
-                        : 'bg-primary hover:bg-secondary/90'
+                        ? 'bg-destructive hover:bg-destructive/90 shadow-lg scale-110'
+                        : isLoading
+                        ? 'bg-primary/70 hover:bg-primary/80 animate-pulse'
+                        : 'bg-primary hover:bg-primary/90 hover:scale-105'
                     }`}
-                    disabled={isLoading}
                   >
                     {isRecording ? (
-                      <MicOff className='h-10 w-10' />
+                      <MicOff className='h-10 w-10 animate-pulse' />
+                    ) : isLoading ? (
+                      <div className='flex items-center justify-center'>
+                        <div className='h-10 w-10 relative'>
+                          <div className='absolute inset-0 flex items-center justify-center'>
+                            <div className='h-6 w-6 border-4 border-t-transparent border-primary-foreground rounded-full animate-spin'></div>
+                          </div>
+                        </div>
+                      </div>
                     ) : (
-                      <Mic className='h-10 w-10' />
+                      <Mic className='h-10 w-10 transition-transform hover:scale-110' />
                     )}
                   </Button>
                 </div>
                 <p className='text-center mt-4 text-lg'>
                   {isRecording
                     ? '음성을 녹음 중입니다... 버튼을 눌러 중지하세요.'
+                    : isLoading
+                    ? '응답을 기다리는 중입니다...'
                     : '버튼을 눌러 음성으로 대화하세요.'}
                 </p>
               </TabsContent>
