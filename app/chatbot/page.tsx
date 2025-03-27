@@ -158,6 +158,10 @@ export default function ChatbotPage() {
 
     let uploadedUrl = null
 
+    // Ensure userName is set
+    const currentUserName =
+      userName || localStorage.getItem('user_id') || 'Guest'
+
     // 이미지가 있으면 먼저 업로드
     // if (imageData) {
     //   uploadedUrl = await uploadImage(imageData)
@@ -177,7 +181,7 @@ export default function ChatbotPage() {
         user_id: string
       } = {
         message: text,
-        user_id: userName,
+        user_id: currentUserName,
       }
 
       // 업로드된 이미지 URL이 있으면 추가
