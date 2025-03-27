@@ -189,10 +189,10 @@ export default function ChatbotPage() {
       let apiUrl = '/api/proxy/chat'
 
       if (text.includes('뉴스')) {
-        apiUrl = '/news'
+        apiUrl = '/api/proxy/news'
         console.log('Detected "뉴스" keyword, routing to news endpoint')
       } else if (text.includes('복지')) {
-        apiUrl = '/welfare'
+        apiUrl = '/api/proxy/welfare'
         console.log('Detected "복지" keyword, routing to welfare endpoint')
       }
       console.log('API 요청 URL:', apiUrl)
