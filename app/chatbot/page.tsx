@@ -177,7 +177,7 @@ export default function ChatbotPage() {
         user_id: string
       } = {
         message: text,
-        user_id: '홍길동',
+        user_id: userName,
       }
 
       // 업로드된 이미지 URL이 있으면 추가
@@ -186,8 +186,15 @@ export default function ChatbotPage() {
       }
 
       // API URL 설정 - 프록시 사용
-      const apiUrl = '/api/proxy/chat'
+      let apiUrl = '/api/proxy/chat'
 
+      if (text.includes('뉴스')) {
+        apiUrl = '/news'
+        console.log('Detected "뉴스" keyword, routing to news endpoint')
+      } else if (text.includes('복지')) {
+        apiUrl = '/welfare'
+        console.log('Detected "복지" keyword, routing to welfare endpoint')
+      }
       console.log('API 요청 URL:', apiUrl)
 
       const response = await fetch(apiUrl, {
